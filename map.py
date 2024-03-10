@@ -5,7 +5,6 @@ import pyautogui
 # Initialize MediaPipe Hands model
 mp_hands = mp.solutions.hands
 hands = mp_hands.Hands(static_image_mode=False,
-                       max_num_hands=1,
                        min_detection_confidence=0.7)
 mp_drawing = mp.solutions.drawing_utils
 
@@ -61,18 +60,24 @@ while cap.isOpened():
                         mp_hands.HandLandmark.RING_FINGER_MCP, mp_hands.HandLandmark.PINKY_MCP]
 
             # Check if the fingertips are close to the corresponding base of the fingers
+            # Inside your loop after getting hand landmarks
             for i, tip_id in enumerate(tip_ids):
                 tip = hand_landmarks.landmark[tip_id]
                 base = hand_landmarks.landmark[base_ids[i]]
-
-                # Calculate the distance between the tip and the base of each finger
-                distance = ((tip.x - base.x) ** 2 + (tip.y - base.y) ** 2) ** 0.5
                 
-                # Assuming a fist will have the fingers not extended
-                if distance < 0.1:  # You may need to adjust this threshold
+                # Convert coordinates to same scale (assuming frame dimensions are correct)
+                tip_x, tip_y = tip.x * frame_width, tip.y * frame_height
+                base_x, base_y = base.x * frame_width, base.y * frame_height
+
+                # Calculate the Euclidean distance
+                distance = ((tip_x - base_x) ** 2 + (tip_y - base_y) ** 2) ** 0.5
+
+                # Adjust this distance threshold to better fit your webcam and hand size
+                if distance < 0.1 :  # Adjust based on your needs
                     fist_score += 1
 
-            if fist_score >= 3:  # Adjust based on your needs, higher for stricter detection
+
+            if fist_score >= 4:  # Adjust based on your needs, higher for stricter detection
                 action = "Zoom"
             
             # Simulate keyboard arrow key presses based on hand movement direction
@@ -87,14 +92,12 @@ while cap.isOpened():
                 pyautogui.press('down')
             
             if action == "Zoom":
-                pyautogui.keyDown('ctrl')
-                pyautogui.press('+')
-                pyautogui.keyUp('ctrl')
+                pyautogui.scroll(100)
             elif action == "Unzoom":
-                pyautogui.keyDown('ctrl')
-                pyautogui.press('-')
-                pyautogui.keyUp('ctrl')
-            
+                pyautogui.scroll(-100)
+            elif action == "Normal":
+                pass
+
             # Overlay the movement direction on the frame
             cv2.putText(frame, f'{horizontal_movement}, {vertical_movement}', (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
 
