@@ -1,1 +1,4 @@
-# comp_vision
+# Navigation System
+
+Open source tools:
+- OpenCV
