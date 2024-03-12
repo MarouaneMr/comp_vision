@@ -80,18 +80,6 @@ class Controller:
         if not cursor_freezed:
             pyautogui.moveTo(x, y, duration = 0)
     
-    def detect_scrolling():
-        scrolling_up =  Controller.little_finger_up and Controller.index_finger_down and Controller.middle_finger_down and Controller.ring_finger_down
-        if scrolling_up:
-            pyautogui.scroll(120)
-            print("Scrolling UP")
-
-        scrolling_down = Controller.index_finger_up and Controller.middle_finger_down and Controller.ring_finger_down and Controller.little_finger_down
-        if scrolling_down:
-            pyautogui.scroll(-120)
-            print("Scrolling DOWN")
-    
-
     def detect_zoomming():
         zoomming = Controller.index_finger_up and Controller.middle_finger_up and Controller.ring_finger_down and Controller.little_finger_down
         window = .05
@@ -110,31 +98,6 @@ class Controller:
             pyautogui.scroll(50)
             pyautogui.keyUp('ctrl')
             print("Zooming In")
-
-    def detect_clicking():
-        left_click_condition = Controller.index_finger_within_Thumb_finger and Controller.middle_finger_up and Controller.ring_finger_up and Controller.little_finger_up and not Controller.middle_finger_within_Thumb_finger and not Controller.ring_finger_within_Thumb_finger and not Controller.little_finger_within_Thumb_finger
-        if not Controller.left_clicked and left_click_condition:
-            pyautogui.click()
-            Controller.left_clicked = True
-            print("Left Clicking")
-        elif not Controller.index_finger_within_Thumb_finger:
-            Controller.left_clicked = False
-
-        right_click_condition = Controller.middle_finger_within_Thumb_finger and Controller.index_finger_up and Controller.ring_finger_up and Controller.little_finger_up and not Controller.index_finger_within_Thumb_finger and not Controller.ring_finger_within_Thumb_finger and not Controller.little_finger_within_Thumb_finger
-        if not Controller.right_clicked and right_click_condition:
-            pyautogui.rightClick()
-            Controller.right_clicked = True
-            print("Right Clicking")
-        elif not Controller.middle_finger_within_Thumb_finger:
-            Controller.right_clicked = False
-
-        double_click_condition = Controller.ring_finger_within_Thumb_finger and Controller.index_finger_up and Controller.middle_finger_up and Controller.little_finger_up and not Controller.index_finger_within_Thumb_finger and not Controller.middle_finger_within_Thumb_finger and not Controller.little_finger_within_Thumb_finger
-        if not Controller.double_clicked and  double_click_condition:
-            pyautogui.doubleClick()
-            Controller.double_clicked = True
-            print("Double Clicking")
-        elif not Controller.ring_finger_within_Thumb_finger:
-            Controller.double_clicked = False
     
     def detect_dragging():
         if not Controller.dragging and Controller.all_fingers_down:
@@ -151,7 +114,6 @@ mpHands = mp.solutions.hands
 hands = mpHands.Hands()
 mpDraw = mp.solutions.drawing_utils
 
-
 while True:
    success, img = cap.read()
    img = cv2.flip(img, 1)
@@ -165,9 +127,7 @@ while True:
         
         Controller.update_fingers_status()
         Controller.cursor_moving()
-        #Controller.detect_scrolling()
         Controller.detect_zoomming()
-        #Controller.detect_clicking()
         Controller.detect_dragging()
 
    cv2.imshow('Hand Tracker', img)
