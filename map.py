@@ -1,112 +1,175 @@
 import cv2
 import mediapipe as mp
+#from controller import Controller
 import pyautogui
 
-# Initialize MediaPipe Hands model
-mp_hands = mp.solutions.hands
-hands = mp_hands.Hands(static_image_mode=False,
-                       min_detection_confidence=0.7)
-mp_drawing = mp.solutions.drawing_utils
+class Controller:
+    prev_hand = None
+    right_clicked = False
+    left_clicked = False
+    double_clicked = False
+    dragging = False
+    hand_Landmarks = None
+    little_finger_down = None
+    little_finger_up = None
+    index_finger_down = None
+    index_finger_up = None
+    middle_finger_down = None
+    middle_finger_up = None
+    ring_finger_down = None
+    ring_finger_up = None
+    Thump_finger_down = None 
+    Thump_finger_up = None
+    all_fingers_down = None
+    all_fingers_up = None
+    index_finger_within_Thumb_finger = None
+    middle_finger_within_Thumb_finger = None
+    little_finger_within_Thumb_finger = None
+    ring_finger_within_Thumb_finger = None
+    screen_width, screen_height = pyautogui.size()
 
-# Initialize the webcam
+
+    def update_fingers_status():
+        Controller.little_finger_down = Controller.hand_Landmarks.landmark[20].y > Controller.hand_Landmarks.landmark[17].y
+        Controller.little_finger_up = Controller.hand_Landmarks.landmark[20].y < Controller.hand_Landmarks.landmark[17].y
+        Controller.index_finger_down = Controller.hand_Landmarks.landmark[8].y > Controller.hand_Landmarks.landmark[5].y
+        Controller.index_finger_up = Controller.hand_Landmarks.landmark[8].y < Controller.hand_Landmarks.landmark[5].y
+        Controller.middle_finger_down = Controller.hand_Landmarks.landmark[12].y > Controller.hand_Landmarks.landmark[9].y
+        Controller.middle_finger_up = Controller.hand_Landmarks.landmark[12].y < Controller.hand_Landmarks.landmark[9].y
+        Controller.ring_finger_down = Controller.hand_Landmarks.landmark[16].y > Controller.hand_Landmarks.landmark[13].y
+        Controller.ring_finger_up = Controller.hand_Landmarks.landmark[16].y < Controller.hand_Landmarks.landmark[13].y
+        Controller.Thump_finger_down = Controller.hand_Landmarks.landmark[4].y > Controller.hand_Landmarks.landmark[13].y
+        Controller.Thump_finger_up = Controller.hand_Landmarks.landmark[4].y < Controller.hand_Landmarks.landmark[13].y
+        Controller.all_fingers_down = Controller.index_finger_down and Controller.middle_finger_down and Controller.ring_finger_down and Controller.little_finger_down
+        Controller.all_fingers_up = Controller.index_finger_up and Controller.middle_finger_up and Controller.ring_finger_up and Controller.little_finger_up
+        Controller.index_finger_within_Thumb_finger = Controller.hand_Landmarks.landmark[8].y > Controller.hand_Landmarks.landmark[4].y and Controller.hand_Landmarks.landmark[8].y < Controller.hand_Landmarks.landmark[2].y
+        Controller.middle_finger_within_Thumb_finger = Controller.hand_Landmarks.landmark[12].y > Controller.hand_Landmarks.landmark[4].y and Controller.hand_Landmarks.landmark[12].y < Controller.hand_Landmarks.landmark[2].y
+        Controller.little_finger_within_Thumb_finger = Controller.hand_Landmarks.landmark[20].y > Controller.hand_Landmarks.landmark[4].y and Controller.hand_Landmarks.landmark[20].y < Controller.hand_Landmarks.landmark[2].y
+        Controller.ring_finger_within_Thumb_finger = Controller.hand_Landmarks.landmark[16].y > Controller.hand_Landmarks.landmark[4].y and Controller.hand_Landmarks.landmark[16].y < Controller.hand_Landmarks.landmark[2].y
+    
+    def get_position(hand_x_position, hand_y_position):
+        old_x, old_y = pyautogui.position()
+        current_x = int(hand_x_position * Controller.screen_width)
+        current_y = int(hand_y_position * Controller.screen_height)
+
+        ratio = 1
+        Controller.prev_hand = (current_x, current_y) if Controller.prev_hand is None else Controller.prev_hand
+        delta_x = current_x - Controller.prev_hand[0]
+        delta_y = current_y - Controller.prev_hand[1]
+        
+        Controller.prev_hand = [current_x, current_y]
+        current_x , current_y = old_x + delta_x * ratio , old_y + delta_y * ratio
+
+        threshold = 5
+        if current_x < threshold:
+            current_x = threshold
+        elif current_x > Controller.screen_width - threshold:
+            current_x = Controller.screen_width - threshold
+        if current_y < threshold:
+            current_y = threshold
+        elif current_y > Controller.screen_height - threshold:
+            current_y = Controller.screen_height - threshold
+
+        return (current_x,current_y)
+        
+    def cursor_moving():
+        point = 9
+        current_x, current_y = Controller.hand_Landmarks.landmark[point].x ,Controller.hand_Landmarks.landmark[point].y
+        x, y = Controller.get_position(current_x, current_y)
+        cursor_freezed = Controller.all_fingers_up and Controller.Thump_finger_down
+        if not cursor_freezed:
+            pyautogui.moveTo(x, y, duration = 0)
+    
+    def detect_scrolling():
+        scrolling_up =  Controller.little_finger_up and Controller.index_finger_down and Controller.middle_finger_down and Controller.ring_finger_down
+        if scrolling_up:
+            pyautogui.scroll(120)
+            print("Scrolling UP")
+
+        scrolling_down = Controller.index_finger_up and Controller.middle_finger_down and Controller.ring_finger_down and Controller.little_finger_down
+        if scrolling_down:
+            pyautogui.scroll(-120)
+            print("Scrolling DOWN")
+    
+
+    def detect_zoomming():
+        zoomming = Controller.index_finger_up and Controller.middle_finger_up and Controller.ring_finger_down and Controller.little_finger_down
+        window = .05
+        index_touches_middle = abs(Controller.hand_Landmarks.landmark[8].x - Controller.hand_Landmarks.landmark[12].x) <= window
+        zoomming_out = zoomming and index_touches_middle
+        zoomming_in = zoomming and not index_touches_middle
+        
+        if zoomming_out:
+            pyautogui.keyDown('ctrl')
+            pyautogui.scroll(-50)
+            pyautogui.keyUp('ctrl')
+            print("Zooming Out")
+
+        if zoomming_in:
+            pyautogui.keyDown('ctrl')
+            pyautogui.scroll(50)
+            pyautogui.keyUp('ctrl')
+            print("Zooming In")
+
+    def detect_clicking():
+        left_click_condition = Controller.index_finger_within_Thumb_finger and Controller.middle_finger_up and Controller.ring_finger_up and Controller.little_finger_up and not Controller.middle_finger_within_Thumb_finger and not Controller.ring_finger_within_Thumb_finger and not Controller.little_finger_within_Thumb_finger
+        if not Controller.left_clicked and left_click_condition:
+            pyautogui.click()
+            Controller.left_clicked = True
+            print("Left Clicking")
+        elif not Controller.index_finger_within_Thumb_finger:
+            Controller.left_clicked = False
+
+        right_click_condition = Controller.middle_finger_within_Thumb_finger and Controller.index_finger_up and Controller.ring_finger_up and Controller.little_finger_up and not Controller.index_finger_within_Thumb_finger and not Controller.ring_finger_within_Thumb_finger and not Controller.little_finger_within_Thumb_finger
+        if not Controller.right_clicked and right_click_condition:
+            pyautogui.rightClick()
+            Controller.right_clicked = True
+            print("Right Clicking")
+        elif not Controller.middle_finger_within_Thumb_finger:
+            Controller.right_clicked = False
+
+        double_click_condition = Controller.ring_finger_within_Thumb_finger and Controller.index_finger_up and Controller.middle_finger_up and Controller.little_finger_up and not Controller.index_finger_within_Thumb_finger and not Controller.middle_finger_within_Thumb_finger and not Controller.little_finger_within_Thumb_finger
+        if not Controller.double_clicked and  double_click_condition:
+            pyautogui.doubleClick()
+            Controller.double_clicked = True
+            print("Double Clicking")
+        elif not Controller.ring_finger_within_Thumb_finger:
+            Controller.double_clicked = False
+    
+    def detect_dragging():
+        if not Controller.dragging and Controller.all_fingers_down:
+            pyautogui.mouseDown(button = "left")
+            Controller.dragging = True
+            print("Dragging")
+        elif not Controller.all_fingers_down:
+            pyautogui.mouseUp(button = "left")
+            Controller.dragging = False
+
 cap = cv2.VideoCapture(0)
 
-while cap.isOpened():
-    ret, frame = cap.read()
-    if not ret:
-        continue
-
-    # Flip the frame horizontally for a later selfie-view display, and vertically if needed
-    frame = cv2.flip(frame, 1)
-
-    # Get the width and height of the frame
-    frame_width, frame_height = frame.shape[1], frame.shape[0]
-
-    # Convert the frame to RGB
-    rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    
-    # Process the frame
-    result = hands.process(rgb_frame)
-    
-    # Draw the hand annotations on the frame
-    if result.multi_hand_landmarks:
-        number_of_hands = len(result.multi_hand_landmarks)
-        action = "Normal"
-
-        # Check if two hands are visible
-        if number_of_hands == 2:
-            action = "Unzoom"
-        else:
-            # Analyze the first hand (assuming max_num_hands=2)
-            hand_landmarks = result.multi_hand_landmarks[0]
-            mp_drawing.draw_landmarks(frame, hand_landmarks, mp_hands.HAND_CONNECTIONS)
-
-            # Determine the horizontal and vertical movements
-            index_fingertip = hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_TIP]
-            index_finger_x = int(index_fingertip.x * frame_width)
-            index_finger_y = int(index_fingertip.y * frame_height)
-
-            horizontal_movement = "Left" if index_finger_x < frame_width // 2 else "Right"
-            vertical_movement = "Up" if index_finger_y < frame_height // 2 else "Down"
-            movement = f'{horizontal_movement}, {vertical_movement}'
-
-            # Check if the hand is likely making a fist
-            tip_ids = [mp_hands.HandLandmark.INDEX_FINGER_TIP, mp_hands.HandLandmark.MIDDLE_FINGER_TIP,
-                       mp_hands.HandLandmark.RING_FINGER_TIP, mp_hands.HandLandmark.PINKY_TIP]
-            base_id = mp_hands.HandLandmark.WRIST
-
-            fist_score = 0  # A measure of how many conditions are met for a fist
-            base_ids = [mp_hands.HandLandmark.INDEX_FINGER_MCP, mp_hands.HandLandmark.MIDDLE_FINGER_MCP,
-                        mp_hands.HandLandmark.RING_FINGER_MCP, mp_hands.HandLandmark.PINKY_MCP]
-
-            # Check if the fingertips are close to the corresponding base of the fingers
-            # Inside your loop after getting hand landmarks
-            for i, tip_id in enumerate(tip_ids):
-                tip = hand_landmarks.landmark[tip_id]
-                base = hand_landmarks.landmark[base_ids[i]]
-                
-                # Convert coordinates to same scale (assuming frame dimensions are correct)
-                tip_x, tip_y = tip.x * frame_width, tip.y * frame_height
-                base_x, base_y = base.x * frame_width, base.y * frame_height
-
-                # Calculate the Euclidean distance
-                distance = ((tip_x - base_x) ** 2 + (tip_y - base_y) ** 2) ** 0.5
-
-                # Adjust this distance threshold to better fit your webcam and hand size
-                if distance < 0.1 :  # Adjust based on your needs
-                    fist_score += 1
+mpHands = mp.solutions.hands
+hands = mpHands.Hands()
+mpDraw = mp.solutions.drawing_utils
 
 
-            if fist_score >= 4:  # Adjust based on your needs, higher for stricter detection
-                action = "Zoom"
-            
-            # Simulate keyboard arrow key presses based on hand movement direction
-            if horizontal_movement == "Left":
-                pyautogui.press('left')
-            elif horizontal_movement == "Right":
-                pyautogui.press('right')
-            
-            if vertical_movement == "Up":
-                pyautogui.press('up')
-            elif vertical_movement == "Down":
-                pyautogui.press('down')
-            
-            if action == "Zoom":
-                pyautogui.scroll(100)
-            elif action == "Unzoom":
-                pyautogui.scroll(-100)
-            elif action == "Normal":
-                pass
+while True:
+   success, img = cap.read()
+   img = cv2.flip(img, 1)
 
-            # Overlay the movement direction on the frame
-            cv2.putText(frame, f'{horizontal_movement}, {vertical_movement}', (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
+   imgRGB = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+   results = hands.process(imgRGB)
 
-    # Display the frame
-    cv2.imshow('Virtual Gesture Map Navigation', frame)
+   if results.multi_hand_landmarks:
+        Controller.hand_Landmarks = results.multi_hand_landmarks[0]
+        mpDraw.draw_landmarks(img, Controller.hand_Landmarks, mpHands.HAND_CONNECTIONS)
+        
+        Controller.update_fingers_status()
+        Controller.cursor_moving()
+        #Controller.detect_scrolling()
+        Controller.detect_zoomming()
+        #Controller.detect_clicking()
+        Controller.detect_dragging()
 
-    if cv2.waitKey(5) & 0xFF == 27:
-        break
-
-hands.close()
-cap.release()
-cv2.destroyAllWindows()
+   cv2.imshow('Hand Tracker', img)
+   if cv2.waitKey(5) & 0xff == 27:
+      break
