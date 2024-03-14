@@ -3,6 +3,7 @@ import mediapipe as mp
 #from controller import Controller
 import pyautogui
 
+
 class Controller:
     prev_hand = None
     right_clicked = False
@@ -27,6 +28,7 @@ class Controller:
     little_finger_within_Thumb_finger = None
     ring_finger_within_Thumb_finger = None
     screen_width, screen_height = pyautogui.size()
+    lerp_factor = 0.2 
 
 
     def update_fingers_status():
@@ -47,19 +49,27 @@ class Controller:
         Controller.little_finger_within_Thumb_finger = Controller.hand_Landmarks.landmark[20].y > Controller.hand_Landmarks.landmark[4].y and Controller.hand_Landmarks.landmark[20].y < Controller.hand_Landmarks.landmark[2].y
         Controller.ring_finger_within_Thumb_finger = Controller.hand_Landmarks.landmark[16].y > Controller.hand_Landmarks.landmark[4].y and Controller.hand_Landmarks.landmark[16].y < Controller.hand_Landmarks.landmark[2].y
     
+    def lerp(start, end, t):
+        """
+        Linearly interpolates between start and end points based on t parameter.
+
+        :param start: The start value (e.g., x or y position).
+        :param end: The end value (e.g., x or y position).
+        :param t: The interpolation parameter (0 <= t <= 1).
+        :return: The interpolated value.
+        """
+        return (1 - t) * start + t * end
+
     def get_position(hand_x_position, hand_y_position):
         old_x, old_y = pyautogui.position()
-        current_x = int(hand_x_position * Controller.screen_width)
-        current_y = int(hand_y_position * Controller.screen_height)
+        target_x = int(hand_x_position * Controller.screen_width)
+        target_y = int(hand_y_position * Controller.screen_height)
 
-        ratio = 1
-        Controller.prev_hand = (current_x, current_y) if Controller.prev_hand is None else Controller.prev_hand
-        delta_x = current_x - Controller.prev_hand[0]
-        delta_y = current_y - Controller.prev_hand[1]
-        
-        Controller.prev_hand = [current_x, current_y]
-        current_x , current_y = old_x + delta_x * ratio , old_y + delta_y * ratio
+        # Apply linear interpolation between the current cursor position and the target position
+        current_x = Controller.lerp(old_x, target_x, Controller.lerp_factor)
+        current_y = Controller.lerp(old_y, target_y, Controller.lerp_factor)
 
+        # Ensure the cursor stays within the screen bounds
         threshold = 5
         if current_x < threshold:
             current_x = threshold
@@ -70,7 +80,7 @@ class Controller:
         elif current_y > Controller.screen_height - threshold:
             current_y = Controller.screen_height - threshold
 
-        return (current_x,current_y)
+        return (int(current_x), int(current_y))
         
     def cursor_moving():
         point = 9
