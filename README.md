@@ -24,5 +24,15 @@ This project utilizes computer vision techniques to enable map navigation throug
 - Ensure you are in a setting with proper lighting conditions for more accuracy in the hand detection
 
 ## Technical explanations and discoveries
+### Hand Tracking and Landmark Detection
+The core of this project relies on hand tracking and landmark detection. We utilize the MediaPipe library to detect hand landmarks accurately. Each detected hand landmark represents a key point on the hand, enabling precise tracking of hand movements and gestures.
+### Cursor Control and Interpolation
+To ensure smooth and natural cursor movement, we employ linear interpolation (lerp) between the current cursor position and the target position calculated based on hand landmarks. This technique helps in achieving fluid cursor movement across the screen, enhancing user experience.
+### Gesture Recognition
+Gesture recognition plays a vital role in interpreting user intentions from hand movements. By analyzing the relative positions of hand landmarks and finger configurations, we can identify gestures such as zooming, dragging, and cursor movement. This process involves defining thresholds and conditions for recognizing specific gestures reliably. (done in the Control class).
+### Real-Time Feedback and Responsiveness
+One of the key challenges in developing this system is achieving real-time feedback and responsiveness. We continuously monitor hand movements captured by the webcam and update the cursor position or perform actions promptly based on detected gestures. Optimizing the processing pipeline and minimizing latency are crucial for delivering a seamless user experience.
+
+
 
 
