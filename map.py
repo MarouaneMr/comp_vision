@@ -5,10 +5,6 @@ import pyautogui
 
 
 class Controller:
-    prev_hand = None
-    right_clicked = False
-    left_clicked = False
-    double_clicked = False
     dragging = False
     hand_Landmarks = None
     little_finger_down = None
@@ -101,19 +97,16 @@ class Controller:
             pyautogui.keyDown('ctrl')
             pyautogui.scroll(-50)
             pyautogui.keyUp('ctrl')
-            print("Zooming Out")
 
         if zoomming_in:
             pyautogui.keyDown('ctrl')
             pyautogui.scroll(50)
             pyautogui.keyUp('ctrl')
-            print("Zooming In")
     
     def detect_dragging():
         if not Controller.dragging and Controller.all_fingers_down:
             pyautogui.mouseDown(button = "left")
             Controller.dragging = True
-            print("Dragging")
         elif not Controller.all_fingers_down:
             pyautogui.mouseUp(button = "left")
             Controller.dragging = False
