@@ -17,6 +17,7 @@ This project utilizes computer vision techniques to enable map navigation throug
 
 ## Hand Gestures Menu:
 ### Cursor movement
+<img width="490" alt="Screen Shot 2024-03-21 at 4 11 46 PM" src="https://github.com/MarouaneMr/comp_vision/assets/126504470/6a507b36-7f49-4181-85ab-f392e4d1fc03">
 ### Zooming
 ### Dragging
 
