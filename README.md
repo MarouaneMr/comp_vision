@@ -45,12 +45,11 @@ One of the key challenges in developing this system is achieving real-time feedb
 ## Task distribution:
 ### Marouane
 - Improved sensitivity and accuracy
-### Karim
+### Mariana & Karim
 - Defined and implemented hand gestures
+- Ensure real-time feedback and responsiveness by optimizing processing pipeline.
 ### Sana
 - Testing and quality assurance + documentation
-### Mariana
-- Defined and implemented hand gestures
 
 
 
