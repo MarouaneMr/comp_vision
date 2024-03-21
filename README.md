@@ -18,8 +18,16 @@ This project utilizes computer vision techniques to enable map navigation throug
 ## Hand Gestures Menu:
 ### Cursor movement
 <img width="490" alt="Screen Shot 2024-03-21 at 4 11 46 PM" src="https://github.com/MarouaneMr/comp_vision/assets/126504470/6a507b36-7f49-4181-85ab-f392e4d1fc03">
+
 ### Zooming
+#### Zooming-in
+<img width="490" alt="Screen Shot 2024-03-21 at 4 11 24 PM" src="https://github.com/MarouaneMr/comp_vision/assets/126504470/8da1a43f-ca00-4711-a4b6-9af6863f6d9f">
+
+#### Zooming-out
+<img width="490" alt="Screen Shot 2024-03-21 at 4 11 36 PM" src="https://github.com/MarouaneMr/comp_vision/assets/126504470/b81b643f-8ea0-4541-b3c9-1f83857ac7f3">
+
 ### Dragging
+<img width="490" alt="Screen Shot 2024-03-21 at 4 11 12 PM" src="https://github.com/MarouaneMr/comp_vision/assets/126504470/598ea242-3ab0-4580-99b3-d01ef4356814">
 
 ## Note:
 - Ensure you are in a setting with proper lighting conditions for more accuracy in the hand detection
