@@ -42,6 +42,12 @@ Gesture recognition plays a vital role in interpreting user intentions from hand
 ### Real-Time Feedback and Responsiveness
 One of the key challenges in developing this system is achieving real-time feedback and responsiveness. We continuously monitor hand movements captured by the webcam and update the cursor position or perform actions promptly based on detected gestures. Optimizing the processing pipeline and minimizing latency are crucial for delivering a seamless user experience.
 
+## Task distribution:
+### Marouane
+### Karim
+### Sana
+### Mariana
+
 
 
 
