@@ -44,9 +44,13 @@ One of the key challenges in developing this system is achieving real-time feedb
 
 ## Task distribution:
 ### Marouane
+- Improved sensitivity and accuracy
 ### Karim
+- Defined and implemented hand gestures
 ### Sana
+- Testing and quality assurance + documentation
 ### Mariana
+- Defined and implemented hand gestures
 
 
 
